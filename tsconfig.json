@@ -1,0 +1,25 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "baseUrl": "/Users/edson/Documents/code/React/clon-spotify/planetary-parsec",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@layouts/*": [
+        "src/layouts/*"
+      ],
+      "@icons/*": [
+        "src/icons/*"
+      ],
+      "@lib/*": [
+        "src/lib/*"
+      ]
+    },
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  }
+}
