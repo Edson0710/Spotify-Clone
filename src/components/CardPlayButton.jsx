@@ -1,9 +1,16 @@
-import { Play } from "./Player";
+import { Pause, Play } from "./Player";
+import { usePlayerStore } from "@/store/playerStore"; // Estado global
 
 export function CardPlayButton({id}) {
+  const { currentSong, isPlaying, setIsPlaying, setCurrentSong } = usePlayerStore(state => state);
+
+  const handleClick = () => {
+    setIsPlaying(!isPlaying);
+  }
+
   return (
-    <div className="card-play-button rounded-full bg-green-500 p-4">
-      <Play />
-    </div>
+    <button onClick={handleClick} className="card-play-button rounded-full bg-green-500 p-4">
+      {isPlaying ? <Pause /> : <Play />}
+    </button>
   )
 }
