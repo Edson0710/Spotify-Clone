@@ -74,26 +74,69 @@ const CurrentSong = ({ image, title, artists }) => {
           {artists?.join(", ")}
         </span>
       </div>
- 
     </div>  
   )
 }
 
+const VolumeControl = () => {
+  const setVolume = usePlayerStore(state => state.setVolume);
+  const volume = usePlayerStore(state => state.volume);
+  const previousVolumeRef = useRef(volume);
+
+  const isVolumeSilence = volume < 0.1;
+
+  const handleClickVolumen = () => {
+    if(isVolumeSilence) {
+      handleClickSilence();
+    } else {
+      previousVolumeRef.current = volume;
+      setVolume(0);
+    }
+  }
+
+  const handleClickSilence = () => {
+    setVolume(previousVolumeRef.current);
+  }
+  
+  return (
+    <div className="flex justify-center gap-x-2">
+      <button className="opacity-70 hover:opacity-100 transition" onClick={handleClickVolumen}>
+        { volume < 0.1 ? <VolumeSilence/> : <Volume/> }
+      </button>
+      <Slider 
+        defaultValue={[100]}
+        max={100}
+        min={0}
+        value={[volume * 100]}
+        className="w-[95px]"
+        onValueChange={(value) => {
+          const [newVolume] = value;
+          const volumeValue = newVolume / 100;
+          setVolume(volumeValue);
+        }}
+      />
+    </div>
+  )
+}
+
 export function Player() {
-  const {currentMusic, isPlaying, setIsPlaying} = usePlayerStore(state => state);
+  const {currentMusic, isPlaying, setIsPlaying, volume} = usePlayerStore(state => state);
   const audioRef = useRef(null);
-  const volumeRef = useRef(1);
 
   useEffect(() => {
     isPlaying ? audioRef.current.play() : audioRef.current.pause();
   }, [isPlaying]);
 
   useEffect(() => {
+    audioRef.current.volume = volume;
+  }, [volume]);
+
+  useEffect(() => {
     const { song, playlist, songs } = currentMusic;
     if(song){
       const src = `/music/${playlist?.id}/0${song.id}.mp3`;
       audioRef.current.src = src;
-      audioRef.current.volume = volumeRef.current;
+      audioRef.current.volume = volume;
       audioRef.current.play();
     }
   }, [currentMusic]);
@@ -128,18 +171,7 @@ export function Player() {
       </div>
 
       <div className="grid place-content-center">
-        <Slider 
-          defaultValue={[100]}
-          max={100}
-          min={0}
-          className="w-[95px]"
-          onValueChange={(value) => {
-            const [newVolume] = value;
-            const volumeValue = newVolume / 100;
-            volumeRef.current = volumeValue;
-            audioRef.current.volume = volumeValue;
-          }}
-        />
+        <VolumeControl />
       </div>
     </div>
   );
