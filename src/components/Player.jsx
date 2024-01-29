@@ -1,5 +1,6 @@
 import { usePlayerStore } from "@/store/playerStore";
 import { useEffect, useRef, useState } from "react";
+import { Slider } from "./Slider";
 
 export const Pause = ({ className }) => (
   <svg
@@ -58,16 +59,44 @@ export const Volume = () => (
   </svg>
 );
 
-export function Player() {
-  const {isPlaying, setIsPlaying} = usePlayerStore(state => state);
-  const [currentSong, setCurrentSong] = useState(null);
+const CurrentSong = ({ image, title, artists }) => {
+  return  (
+    <div className={`flex items-center gap-5 relative overflow-hidden`}>
+      <picture className="w-16 h-16 bg-zinc-800 rounded-md shadow-lg overflow-hidden">
+        <img src={image} alt={title} />
+      </picture>
 
+      <div className="flex flex-col">
+        <h3 className="font-semibold text-sm block">
+          {title}
+        </h3>
+        <span className="text-xs opacity-80">
+          {artists?.join(", ")}
+        </span>
+      </div>
+ 
+    </div>  
+  )
+}
+
+export function Player() {
+  const {currentMusic, isPlaying, setIsPlaying} = usePlayerStore(state => state);
   const audioRef = useRef(null);
+  const volumeRef = useRef(1);
 
   useEffect(() => {
-    audioRef.current.src = `/music/1/01.mp3`;
-  }, []);
+    isPlaying ? audioRef.current.play() : audioRef.current.pause();
+  }, [isPlaying]);
 
+  useEffect(() => {
+    const { song, playlist, songs } = currentMusic;
+    if(song){
+      const src = `/music/${playlist?.id}/0${song.id}.mp3`;
+      audioRef.current.src = src;
+      audioRef.current.volume = volumeRef.current;
+      audioRef.current.play();
+    }
+  }, [currentMusic]);
 
   const handleClick = () => {
     if (isPlaying) {
@@ -82,7 +111,9 @@ export function Player() {
 
   return (
     <div className="flex flex-row justify-between w-full px-4 z-50">
-      <div>Current Song...</div>
+      <div>
+        <CurrentSong {...currentMusic.song} />
+      </div>
 
       <div className="grid place-content-center gap-4 flex-1">
         <div className="flex justify-center">
@@ -96,7 +127,20 @@ export function Player() {
         </div>
       </div>
 
-      <div>Volumen</div>
+      <div className="grid place-content-center">
+        <Slider 
+          defaultValue={[100]}
+          max={100}
+          min={0}
+          className="w-[95px]"
+          onValueChange={(value) => {
+            const [newVolume] = value;
+            const volumeValue = newVolume / 100;
+            volumeRef.current = volumeValue;
+            audioRef.current.volume = volumeValue;
+          }}
+        />
+      </div>
     </div>
   );
 }
